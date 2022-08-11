@@ -12,7 +12,7 @@ import {
 
 import reportWebVitals from './reportWebVitals';
 import NewOffering from './pages/NewOffering'
-
+import Imag from './pages/Imag'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -1,9 +1,79 @@
 import React from 'react'
 import { AiOutlineUser } from "react-icons/ai";
+import { useState, useEffect } from "react";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  listAll,
+  list,
+} from "firebase/storage";
+import { storage } from "../Firebase";
+import { v4 } from "uuid";
+
+import FileUpload from '../FileUpload/FileUpload';
+import FileList from '../FileList/FileList';
 
 
 
 export default function NewOffering() {
+
+  const [files, setFiles] = useState([])
+
+  const removeFile = (filename) => {
+    setFiles(files.filter(file => file.name !== filename))
+  }
+  const [imageUpload, setImageUpload] = useState();
+  const [imageUrls, setImageUrls] = useState([]);
+
+  const [fileUpload, setFileUpload] = useState();
+  const [fileUrls, setFileUrls] = useState([]);
+
+  const imagesListRef = ref(storage, "images/");
+  const uploadFile = () => {
+    if (imageUpload == null) return;
+    const imageRef = ref(storage, `images/${imageUpload.name + v4()}`);
+    uploadBytes(imageRef, imageUpload).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        setImageUrls((prev) => [...prev, url]);
+      });
+    });
+    
+  };
+
+
+  const filesListRef = ref(storage, "files/");
+  const uploadFiles = () => {
+    if (fileUpload == null) return;
+    const fileRef = ref(storage, `filess/${fileUpload.name + v4()}`);
+    uploadBytes(fileRef, fileUpload).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        setFileUrls((prev) => [...prev, url]);
+      });
+    });
+    
+  };
+
+  useEffect(() => {
+    listAll(imagesListRef).then((response) => {
+      response.items.forEach((item) => {
+        getDownloadURL(item).then((url) => {
+          setImageUrls((prev) => [...prev, url]);
+        });
+      });
+    });
+  }, []);
+
+
+  useEffect(() => {
+    listAll(filesListRef).then((response) => {
+      response.items.forEach((item) => {
+        getDownloadURL(item).then((url) => {
+          setFileUrls((prev) => [...prev, url]);
+        });
+      });
+    });
+  }, []);
   return (
     <div className=' w-full'>
 
@@ -101,53 +171,64 @@ export default function NewOffering() {
           </div>
 
           <div className='flex flex-col border-x-2 h-screen '>
-            <div className=' mx-8  mt-10  lg:h-72  border-dashed border-2 border-slate-400 rounded-xl  bg-zinc-300 '>
-            
-            <div className='flex lg:mt-5 md:my-4'>
-            
-            <div className=' lg:ml-10 md:ml-3 lg:text-lg md:text-sm  font-semibold'>
-            New Offering Section
-            </div> 
-            <button className='lg:ml-52 border-2 px-5 py-1 rounded-md text-white bg-red-700'>
-            Delete
-            </button>
-            <button className='lg:ml-3  md:mr-2  border-2 px-4 py-1 rounded-md text-white bg-blue-800'>
-            Save
-            </button>
-            
-            </div>
-            <div className='md:mx-2  md:space-y-1  '>
-            <div className=' border rounded-md  border-black bg-white text-gray-400 pl-5 py-1'>
-            Section Title
-            
-            </div>
-            <div   className=' border rounded-md border-black bg-white text-gray-400 pl-5 py-1'> Section Subtitle</div>
-            <div className=' border rounded-md border-black bg-white text-gray-400 pl-5 py-4'> Section Description</div>
-            </div>
-            <div className='flex space-x-4 justify-center mt-12 md:mb-3 md:mx-4'>
-            
-            <button className=' border rounded-md border-black md:text-xs bg-blue-800 text-white lg:px-5 lg:py-1'>
-            + New Media
-            </button>
-            <button className=' border rounded-md border-black md:text-xs bg-blue-800 text-white lg:px-5 lg:py-1'>
-            + New Media
-            </button>
-            <button className=' border rounded-md border-black md:text-xs bg-blue-800 text-white lg:px-5 lg:py-1'>
-            + New Media
-            </button>
-            <button className=' border rounded-md border-black md:text-xs bg-blue-800 text-white lg:px-5 lg:py-1'>
-            + New Media
-            </button>
-            </div>
+            <div className=' mx-8  mt-10  lg:h-96  border-dashed border-2 border-slate-400 rounded-xl  bg-zinc-300 '>
+
+              <div className='flex lg:mt-5 md:my-4'>
+
+                <div className=' lg:ml-10 md:ml-3 lg:text-lg md:text-sm  font-semibold'>
+                  New Offering Section
+                </div>
+                <button className='lg:ml-52 border-2 px-5 py-1 rounded-md text-white bg-red-700'>
+                  Delete
+                </button>
+                <button className='lg:ml-3  md:mr-2  border-2 px-4 py-1 rounded-md text-white bg-blue-800'>
+                  Save
+                </button>
+
+              </div>
+              <div className='md:mx-2  md:space-y-1  '>
+                <div className=' '>
+                  <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight " id="username" type="text" placeholder="Section Title   "></input>
+                </div>
+
+                <div className=' '>
+                  <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight " id="username" type="text" placeholder="Section Subtitle   "></input>
+                </div>
+
+                <div className=' mb-4'>
+                  <input class="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight " id="username" type="text" placeholder="Section Description   "></input>
+                </div>
+
               </div>
 
-            <div className='  mx-8  mt-5   lg:h-52  md:h-32  border-dashed border-2 border-slate-400 rounded-xl  '>
-              
-              <div className='flex justify-center  lg:mt-32 md:mt-16  font-semisbold '>
-              Create a new section
+
+              <div id='slider' className='flex flex-cols-6 px-6  w-ful h-32 overflow-x-scroll scroll   scroll-smooth' >
+                {imageUrls.map((url) => {
+                  return <img src={url} />;
+                })}
               </div>
-              
-            
+             
+              <div className='ml-32 pt-2 '>
+                <input
+                  type="file"
+                  onChange={(event) => {
+                    setImageUpload(event.target.files[0]);
+                  }} />
+
+                <button onClick={uploadFile} className=' border rounded-md border-black md:text-xs bg-blue-800 text-white lg:px-5 lg:py-1'>
+                  Upload
+                </button>
+              </div>
+
+            </div>
+
+            <div className='  mx-8  mt-5   lg:h-52  md:h-32  border-dashed border-2 border-slate-400 rounded-xl  '>
+
+              <div className='flex justify-center  lg:mt-32 md:mt-16  font-semisbold '>
+                Create a new section
+              </div>
+
+
             </div>
 
           </div>
@@ -157,7 +238,7 @@ export default function NewOffering() {
 
         <div className='flex flex-col h-screen lg:w-[25%] '>
 
-          <div className='flex justify-end lg:space-x-10 md:space-x-8 lg:pr-16 md:mr-28 lg:pt-4  '>
+          <div className='flex justify-end lg:space-x-6 md:space-x-8 mr-10 mt-3  '>
             <button className='lg:mt-1 md:mt-2 text-sm font-semibold b'>
               Sign Out
             </button>
@@ -167,45 +248,25 @@ export default function NewOffering() {
             </div>
           </div>
 
+          <div className=' font-semibold mt-14 ml-8 text-lg '>
+          Documents
+        </div>
+                  
+        <div >
+  
+        <FileUpload files={files} setFiles={setFiles}
+          removeFile={removeFile} />
+        <FileList files={files} removeFile={removeFile} />
+      </div>
 
-          <div className='flex mt-16 ml-5 md:mr-28 '>
-            <div className=' font-semibold pt-1 text-lg '>
-              Documents
-            </div>
-
-            <button className=' lg:ml-32 md:ml-10 bg-blue-700 text-white px-3 py-1  border rounded-lg '>
-              Add
-            </button>
-
-          </div>
-
-          <div className=' border-t  ml-5 lg:mr-12 md:mr-28 mt-6  py-5 '></div>
-
-
-
-          <div className='flex border-2 ml-5 lg:mr-12 md:mr-28  py-2 rounded-t-md   '>
-            <div className='text-sm lg:px-10 md:ml-3  font-semibol'>
-              form_c.pdf
-            </div>
-            <button className='text-sm lg:mx-14  md:ml-12  font-bold text-blue-700 '>
-              Remove
-            </button>
-
-          </div>
-
-          <div className='flex border-2 ml-5 lg:mr-12 md:mr-28   py-2 rounded-b-md  '>
-            <div className='text-sm lg:px-10 md:ml-3  font-semibold'>
-              articles.pdf
-            </div>
-            <button className='text-sm lg:mx-14  md:ml-12  font-bold text-blue-700 '>
-              Remove
-            </button>
+  
+  
           </div>
 
         </div>
 
       </div>
 
-    </div>
+    
   )
 }
